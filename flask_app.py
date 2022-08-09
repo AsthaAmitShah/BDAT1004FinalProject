@@ -115,14 +115,14 @@ def initialize():
         if response.status_code == 200:
             result = response.json()
         else:
-            return("The api throwed the following error:", response.status_code)
+            return f"The api throwed the following error: {response.status_code}"
 
     except requests.exceptions.HTTPError as e:
-            return("The code encountered the following HTTPError error:", e)
+            return f"The code encountered the following HTTPError error: {e}"
     except requests.exceptions.RequestException as e:
-        return("The code encountered the following RequestException error:", e)
+        return f"The code encountered the following RequestException error: {e}"
     except Exception as e:
-        return("The code encountered the following error:", e)
+        return f"The code encountered the following error: {e}"
 
     for curr,currencyName in result.get("symbols", {}).items():
         currObj = CurrenySymbols(curr=curr,currName=currencyName)
@@ -150,14 +150,14 @@ def initialize():
         if response.status_code == 200:
             result = response.json()
         else:
-            return("The api throwed the following error:", response.status_code)
+            return f"The api throwed the following error: {response.status_code}"
 
     except requests.exceptions.HTTPError as e:
-            return("The code encountered the following HTTPError error:", e)
+            return f"The code encountered the following HTTPError error: {e}"
     except requests.exceptions.RequestException as e:
-        return("The code encountered the following RequestException error:", e)
+        return f"The code encountered the following RequestException error: {e}"
     except Exception as e:
-        return("The code encountered the following error:", e)
+        return f"The code encountered the following error: {e}"
 
     for strDate,values in result.get("rates", {}).items():
         usd = values.get("USD", 0)
