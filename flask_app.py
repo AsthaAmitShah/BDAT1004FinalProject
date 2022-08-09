@@ -45,6 +45,8 @@ class ExchangeRateRow(db.Model):
 @app.route("/initialize", methods=["GET"])
 def initialize():
 
+    tables = db.reflect()
+    return tables
     # if len(CurrenySymbols.query.all()) == 0:
     url = "https://api.apilayer.com/exchangerates_data/symbols"
 
