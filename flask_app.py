@@ -104,7 +104,7 @@ def initialize():
     except Exception as e:
         return("The code encountered the following error:", e)
 
-    for date,values in result.get("rates", {}).items():
+    for strDate,values in result.get("rates", {}).items():
         usd = values.get("USD", 0)
         cad = values.get("CAD", 0)
         inr = values.get("INR", 0)
@@ -113,6 +113,7 @@ def initialize():
         bhd = values.get("BHD", 0)
         hkd = values.get("HKD", 0)
         jpy = values.get("JPY", 0)
+        date = strDate.replace("-", "")
         currExchangeRateObj = ExchangeRateRow(
             date=date, USD=usd, CAD=cad, INR=inr, EUR=eur, AED=aed, BHD=bhd, HKD=hkd, JPY=jpy
         )
