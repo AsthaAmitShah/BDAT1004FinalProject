@@ -1,6 +1,8 @@
 from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 import requests
+from datetime import datetime, timedelta
+
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -28,7 +30,6 @@ class ExchangeRateRow(db.Model):
     __tablename__ = "exchangeRates"
 
     date = db.Column(db.Integer, primary_key=True)
-    lastUpdated = db.Column(db.Integer)
     USD = db.Column(db.Float)
     CAD = db.Column(db.Float)
     INR = db.Column(db.Float)
@@ -46,7 +47,6 @@ class ExchangeRateRow(db.Model):
 def initialize():
 
     db.create_all()
-    # if len(CurrenySymbols.query.all()) == 0:
     url = "https://api.apilayer.com/exchangerates_data/symbols"
 
     payload = {}
@@ -74,6 +74,49 @@ def initialize():
         db.session.add(currObj)
     
     db.session.commit()
-    
 
+    endDateTimeObj = datetime.today()
+    startDateTimeObj = datetime.today() - timedelta(days=30)
+
+    end_date = endDateTimeObj.strftime("%Y-%m-%d")
+    start_date = startDateTimeObj.strftime("%Y-%m-%d")
+
+    url = url = f"https://api.apilayer.com/exchangerates_data/timeseries?start_date={start_date}&end_date={end_date}"
+
+    payload = {}
+    headers= {
+    "apikey": API_KEY
+    }
+
+    result = {}
+    try:
+        response = requests.get(url, headers=headers, data = payload)
+        if response.status_code == 200:
+            result = response.json()
+        else:
+            return("The api throwed the following error:", response.status_code)
+
+    except requests.exceptions.HTTPError as e:
+            return("The code encountered the following HTTPError error:", e)
+    except requests.exceptions.RequestException as e:
+        return("The code encountered the following RequestException error:", e)
+    except Exception as e:
+        return("The code encountered the following error:", e)
+
+    for date,values in result.get("rates", {}).items():
+        usd = values.get("USD", 0)
+        cad = values.get("CAD", 0)
+        inr = values.get("INR", 0)
+        eur = values.get("EUR", 0)
+        aed = values.get("AED", 0)
+        bhd = values.get("BHD", 0)
+        hkd = values.get("HKD", 0)
+        jpy = values.get("JPY", 0)
+        currExchangeRateObj = ExchangeRateRow(
+            date=date, USD=usd, CAD=cad, INR=inr, EUR=eur, AED=aed, BHD=bhd, HKD=hkd, JPY=jpy
+        )
+        db.session.add(currExchangeRateObj)
+    
+    db.session.commit()
+    
     return
