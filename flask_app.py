@@ -2,51 +2,6 @@ from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 import requests
 from datetime import datetime, timedelta
-import atexit
-
-from apscheduler.schedulers.background import BackgroundScheduler
-
-# Declaration of the task as a function.
-def addDailyExchangeRate(db, API_KEY):
-
-    base = "USD"
-    url = f"https://api.apilayer.com/exchangerates_data/latest?base={base}"
-
-    payload = {}
-    headers= {
-    "apikey": API_KEY
-    }
-
-    result = {}
-    try:
-        response = requests.get(url, headers=headers, data = payload)
-        if response.status_code == 200:
-            result = response.json()
-        else:
-            return("The api throwed the following error:", response.status_code)
-
-    except requests.exceptions.HTTPError as e:
-            return("The code encountered the following HTTPError error:", e)
-    except requests.exceptions.RequestException as e:
-        return("The code encountered the following RequestException error:", e)
-    except Exception as e:
-        return("The code encountered the following error:", e)
-
-    usd = result.get("rates", {}).get("USD", 0)
-    cad = result.get("rates", {}).get("CAD", 0)
-    inr = result.get("rates", {}).get("INR", 0)
-    eur = result.get("rates", {}).get("EUR", 0)
-    aed = result.get("rates", {}).get("AED", 0)
-    bhd = result.get("rates", {}).get("BHD", 0)
-    hkd = result.get("rates", {}).get("HKD", 0)
-    jpy = result.get("rates", {}).get("JPY", 0)
-    strDate = result.get("date", "")
-    date = strDate.replace("-", "")
-    currExchangeRateObj = ExchangeRateRow(
-        date=date, USD=usd, CAD=cad, INR=inr, EUR=eur, AED=aed, BHD=bhd, HKD=hkd, JPY=jpy
-    )
-    db.session.add(currExchangeRateObj)
-    db.session.commit()
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -64,16 +19,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 API_KEY = "P2dnLPUw5Pz0HyGerxzFhaJLb89sASMq"
-
-# Create the background scheduler
-scheduler = BackgroundScheduler()
-# Create the job
-scheduler.add_job(func=addDailyExchangeRate, args=[db,API_KEY], trigger="interval", seconds=60)
-# Start the scheduler
-scheduler.start()
-
-# /!\ IMPORTANT /!\ : Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
 
 class CurrenySymbols(db.Model):
     __tablename__ = "currencySymbols"
