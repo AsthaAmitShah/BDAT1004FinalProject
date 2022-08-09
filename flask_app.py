@@ -68,7 +68,7 @@ API_KEY = "P2dnLPUw5Pz0HyGerxzFhaJLb89sASMq"
 # Create the background scheduler
 scheduler = BackgroundScheduler()
 # Create the job
-scheduler.add_job(func=addDailyExchangeRate, trigger="interval" seconds=60)
+scheduler.add_job(func=addDailyExchangeRate, trigger="interval", seconds=60)
 # Start the scheduler
 scheduler.start()
 
