@@ -14,7 +14,7 @@ def addDailyExchangeRate(db, API_KEY):
 
     payload = {}
     headers= {
-    "apikey": "P2dnLPUw5Pz0HyGerxzFhaJLb89sASMq"
+    "apikey": API_KEY
     }
 
     result = {}
@@ -68,7 +68,7 @@ API_KEY = "P2dnLPUw5Pz0HyGerxzFhaJLb89sASMq"
 # Create the background scheduler
 scheduler = BackgroundScheduler()
 # Create the job
-scheduler.add_job(func=addDailyExchangeRate, trigger="interval", seconds=60)
+scheduler.add_job(func=addDailyExchangeRate, args=[db,API_KEY], trigger="interval", seconds=60)
 # Start the scheduler
 scheduler.start()
 
@@ -177,3 +177,10 @@ def initialize():
     db.session.commit()
     
     return "Successfully initialized the databases!"
+
+@app.route('/')
+def index():
+    return 'Web App with Python Flask!'
+
+if __name__ == "__main__":
+  app.run()
