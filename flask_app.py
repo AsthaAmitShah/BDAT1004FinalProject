@@ -46,7 +46,7 @@ class ExchangeRateRow(db.Model):
 def initialize():
 
     tables = db.reflect()
-    return tables
+    print(tables)
     # if len(CurrenySymbols.query.all()) == 0:
     url = "https://api.apilayer.com/exchangerates_data/symbols"
 
