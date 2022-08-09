@@ -19,7 +19,7 @@ db = SQLAlchemy(app)
 
 API_KEY = "P2dnLPUw5Pz0HyGerxzFhaJLb89sASMq"
 
-class CurrenySymbols(db.Models):
+class CurrenySymbols(db.Model):
     __tablename__ = "currencySymbols"
     curr = db.Column(db.String(5))
     currName = db.Column(db.String(50))
