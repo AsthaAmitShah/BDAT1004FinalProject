@@ -21,7 +21,7 @@ API_KEY = "P2dnLPUw5Pz0HyGerxzFhaJLb89sASMq"
 
 class CurrenySymbols(db.Model):
     __tablename__ = "currencySymbols"
-    curr = db.Column(db.String(5))
+    curr = db.Column(db.String(5), primary_key=True)
     currName = db.Column(db.String(50))
 
 class ExchangeRateRow(db.Model):
