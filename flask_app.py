@@ -137,8 +137,8 @@ def getAllExchangeRates():
     print(queryObj)
     # dataObj = db.engine.ex
     # print(dataObj)
-    # return jsonify(dataObj)
-    return 'abc'
+    return jsonify(queryObj)
+    # return 'abc'
 
 if __name__ == "__main__":
   app.run()
