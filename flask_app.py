@@ -130,15 +130,10 @@ def root():
 @app.route('/getAllExchangeRates')
 def getAllExchangeRates():
 
-    # if request.method == 'GET':
-    #     request_data = request.args.to_dict()
-    # else:
-    #     request_data = request.get_json()
-
     try: 
         dataObj = db.session().query(ExchangeRateRow).order_by(ExchangeRateRow.date.desc()).first()
     except Exception as e:
-        return f"The code encountered the following error {e}"
+        return {"Error": f"The code encountered the following error {e}"}
     rates = object_as_dict(dataObj)
 
     response = {
@@ -147,6 +142,34 @@ def getAllExchangeRates():
     }
 
     return response
+
+# @app.route('/getPastExchangeRates')
+# def getPastExchangeRates():
+#     if request.method == 'GET':
+#         request_data = request.args.to_dict()
+#     else:
+#         request_data = request.get_json()
+
+#     startDate = request_data.get("start_date", None)
+#     endDate = request_data.get("start_date", None)
+#     currency = request_data.get("currency", None)
+
+#     if startDate == None or endDate == None or currency == None:
+#         return {"Error": "Please provide all there parameters start_date, end_date and currency"}
+
+#     try: 
+#         dataObj = db.session().query(ExchangeRateRow).filter_by(ExchangeRateRow.date.desc()).first()
+#     except Exception as e:
+#         return f"The code encountered the following error {e}"
+#     rates = object_as_dict(dataObj)
+
+#     response = {
+#         "base_code": "USD",
+#         "rates": rates
+#     }
+
+    return response
+
 
 if __name__ == "__main__":
   app.run()
