@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, request, url_for, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, inspect
 import requests
 from datetime import datetime, timedelta
 
@@ -37,6 +37,10 @@ class ExchangeRateRow(db.Model):
     BHD = db.Column(db.Float)
     HKD = db.Column(db.Float)
     JPY = db.Column(db.Float)
+
+def object_as_dict(obj):                                                                                                                                           
+    return {c.key: getattr(obj, c.key)                                                                                                                             
+        for c in inspect(obj).mapper.column_attrs}
 
 @app.route("/initialize", methods=["GET"])
 def initialize():
@@ -119,9 +123,9 @@ def initialize():
     
     return "Successfully initialized the databases!"
 
-@app.route('/')
-def index():
-    return 'Web App with Python Flask!'
+@app.route('/', methods=['GET'])
+def root():
+    return render_template('index.html') # Return index.html 
 
 @app.route('/getAllExchangeRates')
 def getAllExchangeRates():
@@ -131,14 +135,11 @@ def getAllExchangeRates():
     # else:
     #     request_data = request.get_json()
 
-
-    
-    queryObj = ExchangeRateRow.query.filter(ExchangeRateRow.date == datetime.today().strftime("%Y-%m-%d"))
-    print(queryObj)
-    # dataObj = db.engine.ex
-    # print(dataObj)
-    return jsonify(queryObj)
-    # return 'abc'
+    try: 
+        dataObj = db.session().query(ExchangeRateRow).order_by(ExchangeRateRow.date.desc()).first()
+    except Exception as e:
+        return f"The code encountered the following error {e}"
+    return object_as_dict(dataObj)
 
 if __name__ == "__main__":
   app.run()
