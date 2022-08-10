@@ -130,7 +130,7 @@ def root():
 @app.route('/getAllExchangeRates')
 def getAllExchangeRates():
 
-    try: 
+    try:
         dataObj = db.session().query(ExchangeRateRow).order_by(ExchangeRateRow.date.desc()).first()
     except Exception as e:
         return {"Error": f"The code encountered the following error {e}"}
@@ -167,8 +167,7 @@ def getAllExchangeRates():
 #         "base_code": "USD",
 #         "rates": rates
 #     }
-
-    return response
+#     return response
 
 
 if __name__ == "__main__":
