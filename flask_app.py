@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 app.config["DEBUG"] = True
 
+# MySQL configurations
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
     username="BDATProject",
     password="myExchangeRates",
@@ -19,13 +20,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+# External API key to https://apilayer.com/marketplace/exchangerates_data-api
 API_KEY = "P2dnLPUw5Pz0HyGerxzFhaJLb89sASMq"
 
-class CurrenySymbols(db.Model):
-    __tablename__ = "currencySymbols"
-    curr = db.Column(db.String(5), primary_key=True)
-    currName = db.Column(db.String(50))
-
+# Databaseschema / Class for exchangerates
 class ExchangeRateRow(db.Model):
     __tablename__ = "exchangeRates"
 
@@ -39,47 +37,28 @@ class ExchangeRateRow(db.Model):
     HKD = db.Column(db.Float)
     JPY = db.Column(db.Float)
 
+# Convert sqlalchemy object to json dictionary so that flask can return it to webpage
 def object_as_dict(obj):                                                                                                                                           
     return {c.key: getattr(obj, c.key)                                                                                                                             
         for c in inspect(obj).mapper.column_attrs}
 
+# Index page call / Dashboard page
 @app.route('/', methods=['GET'])
 def root():
     return render_template('index.html') # Return index.html 
 
+# This method will overwrite the databases if they exist and initialize them
+# Should only be used when starting the application
+# When starting the application it will not have historical data for graphs so using this method
+# to populate some historical data
 @app.route("/initialize", methods=["GET"])
 def initialize():
 
+    # Drop and re create all the tables
     db.drop_all()
     db.create_all()
-    url = "https://api.apilayer.com/exchangerates_data/symbols"
 
-    payload = {}
-    headers= {
-    "apikey": API_KEY
-    }
-
-    result = {}
-    try:
-        response = requests.get(url, headers=headers, data = payload)
-        if response.status_code == 200:
-            result = response.json()
-        else:
-            return f"The api throwed the following error: {response.status_code}"
-
-    except requests.exceptions.HTTPError as e:
-            return f"The code encountered the following HTTPError error: {e}"
-    except requests.exceptions.RequestException as e:
-        return f"The code encountered the following RequestException error: {e}"
-    except Exception as e:
-        return f"The code encountered the following error: {e}"
-
-    for curr,currencyName in result.get("symbols", {}).items():
-        currObj = CurrenySymbols(curr=curr,currName=currencyName)
-        db.session.add(currObj)
-    
-    db.session.commit()
-
+    # Fetch data for the past 30 days
     endDateTimeObj = datetime.today()
     startDateTimeObj = datetime.today() - timedelta(days=30)
 
@@ -87,7 +66,7 @@ def initialize():
     start_date = startDateTimeObj.strftime("%Y-%m-%d")
     base = "USD"
 
-    url = url = f"https://api.apilayer.com/exchangerates_data/timeseries?start_date={start_date}&end_date={end_date}&base={base}"
+    url = f"https://api.apilayer.com/exchangerates_data/timeseries?start_date={start_date}&end_date={end_date}&base={base}"
 
     payload = {}
     headers= {
@@ -128,15 +107,19 @@ def initialize():
     
     return "Successfully initialized the databases!"
 
+# Get the latest exchange rates for all the currencies
 @app.route('/getAllExchangeRates')
 def getAllExchangeRates():
 
     try:
+        # Query the exchangerates table, sort it in descending order by date and get the last row for latest values
         dataObj = db.session().query(ExchangeRateRow).order_by(ExchangeRateRow.date.desc()).first()
     except Exception as e:
         return {"Error": f"The code encountered the following error {e}"}
     
+    # Convert the response into dictionary / json
     rates = object_as_dict(dataObj)
+    # Remove date from the currencies
     date = rates.get("date", None)
     rates.pop("date", None)
 
@@ -148,6 +131,8 @@ def getAllExchangeRates():
 
     return response
 
+# Get past exchanges rates based on the start_time and end_time provided by the user
+# If the user provides a curreny show data for that currency else show data for all the currencies
 @app.route('/getPastExchangeRates')
 def getPastExchangeRates():
     if request.method == 'GET':
@@ -178,6 +163,7 @@ def getPastExchangeRates():
         for cur, value in rates.items():
             if cur == "date":
                 continue
+            # If no currency is provided fetch data for all the currencies else only for specified currency
             if currency is None:
                 exchangeRates[cur] = value
             if currency is not None and cur == currency:
@@ -188,6 +174,7 @@ def getPastExchangeRates():
     return response
 
 
+# Get all historical data for a particular currency
 @app.route('/getCurrencyExchangeRate')
 def getCurrencyExchangeRate():
     if request.method == 'GET':
