@@ -136,10 +136,12 @@ def getAllExchangeRates():
         return {"Error": f"The code encountered the following error {e}"}
     
     rates = object_as_dict(dataObj)
-    rates.pop("key", None)
+    date = rates.get("date", None)
+    rates.pop("date", None)
 
     response = {
         "base_code": "USD",
+        "date": date,
         "rates": rates
     }
 
