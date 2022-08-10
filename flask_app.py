@@ -167,8 +167,6 @@ def getPastExchangeRates():
         endDateStr = endDate.replace("-", "")
         if currency is None:
             dataObj = db.session().query(ExchangeRateRow).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
-        else:
-            dataObj = db.session().query(ExchangeRateRow).with_entities(currency).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
     except Exception as e:
         return f"The code encountered the following error {e}"
     response = {
@@ -181,7 +179,8 @@ def getPastExchangeRates():
         for cur, value in rates.items():
             if cur == "date":
                 continue
-            exchangeRates[cur] = value
+            if currency is not None and cur == currency:
+                exchangeRates[cur] = value
 
         response.get("rates")[rates.get("date", "00000000")] = exchangeRates
 
@@ -201,7 +200,7 @@ def getCurrencyExchangeRate():
         return {"Error": "Please provide the currency"}
 
     try: 
-        dataObj = db.session().query(ExchangeRateRow).with_entities(currency).all()
+        dataObj = db.session().query(ExchangeRateRow).all()
     except Exception as e:
         return f"The code encountered the following error {e}"
     response = {
@@ -214,6 +213,7 @@ def getCurrencyExchangeRate():
         for cur, value in rates.items():
             if cur == "date":
                 continue
+        if currency is not None and cur == currency:
             exchangeRates[cur] = value
 
         response.get("rates")[rates.get("date", "00000000")] = exchangeRates
