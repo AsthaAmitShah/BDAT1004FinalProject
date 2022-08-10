@@ -1,3 +1,4 @@
+from urllib import response
 from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy, inspect
 import requests
@@ -200,7 +201,7 @@ def getCurrencyExchangeRate():
         return {"Error": "Please provide the currency"}
 
     try: 
-        dataObj = db.session().query(ExchangeRateRow).with_entities(currency).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
+        dataObj = db.session().query(ExchangeRateRow).with_entities(currency).all()
     except Exception as e:
         return f"The code encountered the following error {e}"
     response = {
