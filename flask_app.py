@@ -133,7 +133,7 @@ def getAllExchangeRates():
 
 
     
-    queryObj = CurrenySymbols.query.filter(CurrenySymbols.date == datetime.today().strftime("%Y-%m-%d"))
+    queryObj = ExchangeRateRow.query.filter(ExchangeRateRow.date == datetime.today().strftime("%Y-%m-%d"))
     print(queryObj)
     # dataObj = db.engine.ex
     # print(dataObj)
