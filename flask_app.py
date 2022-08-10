@@ -147,31 +147,44 @@ def getAllExchangeRates():
 
     return response
 
-# @app.route('/getPastExchangeRates')
-# def getPastExchangeRates():
-#     if request.method == 'GET':
-#         request_data = request.args.to_dict()
-#     else:
-#         request_data = request.get_json()
+@app.route('/getPastExchangeRates')
+def getPastExchangeRates():
+    if request.method == 'GET':
+        request_data = request.args.to_dict()
+    else:
+        request_data = request.get_json()
 
-#     startDate = request_data.get("start_date", None)
-#     endDate = request_data.get("start_date", None)
-#     currency = request_data.get("currency", None)
+    startDate = request_data.get("start_date", None)
+    endDate = request_data.get("start_date", None)
+    currency = request_data.get("currency", None)
 
-#     if startDate == None or endDate == None or currency == None:
-#         return {"Error": "Please provide all there parameters start_date, end_date and currency"}
+    if startDate == None or endDate == None:
+        return {"Error": "Please provide the parameters start_date, end_date"}
 
-#     try: 
-#         dataObj = db.session().query(ExchangeRateRow).filter_by(ExchangeRateRow.date.desc()).first()
-#     except Exception as e:
-#         return f"The code encountered the following error {e}"
-#     rates = object_as_dict(dataObj)
+    try: 
+        startDateStr = startDate.replace("-", "")
+        endDateStr = endDate.replace("-", "")
+        if currency is None:
+            dataObj = db.session().query(ExchangeRateRow).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
+        else:
+            dataObj = db.session().query(ExchangeRateRow).with_entities(currency).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
+    except Exception as e:
+        return f"The code encountered the following error {e}"
+    response = {
+        "base": "USD",
+        "rates": {}
+    }
+    for obj in dataObj:
+        rates = object_as_dict(obj)
+        exchangeRates = {}
+        for cur, value in rates.items():
+            if cur == "date":
+                continue
+            exchangeRates[cur] = value
 
-#     response = {
-#         "base_code": "USD",
-#         "rates": rates
-#     }
-#     return response
+        response.get("rates")[rates.get("date", "00000000")] = exchangeRates
+
+    return response
 
 
 if __name__ == "__main__":
