@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
 from datetime import datetime, timedelta
@@ -123,16 +123,22 @@ def initialize():
 def index():
     return 'Web App with Python Flask!'
 
-@app.route('/getAllExchangesrates')
+@app.route('/getAllExchangeRates')
 def getAllExchangeRates():
 
     # if request.method == 'GET':
     #     request_data = request.args.to_dict()
     # else:
     #     request_data = request.get_json()
+
+
     
-    dataObj = db.query().order_by(ExchangeRateRow.date.desc()).first()
-    return requests.jsonify(dataObj)
+    queryObj = CurrenySymbols.query.filter(CurrenySymbols.date == datetime.today().strftime("%Y-%m-%d"))
+    print(queryObj)
+    # dataObj = db.engine.ex
+    # print(dataObj)
+    # return jsonify(dataObj)
+    return 'abc'
 
 if __name__ == "__main__":
   app.run()
