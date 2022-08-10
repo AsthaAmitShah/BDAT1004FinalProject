@@ -139,7 +139,12 @@ def getAllExchangeRates():
         dataObj = db.session().query(ExchangeRateRow).order_by(ExchangeRateRow.date.desc()).first()
     except Exception as e:
         return f"The code encountered the following error {e}"
-    return object_as_dict(dataObj)
+    rates = object_as_dict(dataObj)
+
+    response = {
+        "base_code": "USD",
+        "rates": rates
+    }
 
 if __name__ == "__main__":
   app.run()

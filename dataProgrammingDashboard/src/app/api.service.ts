@@ -14,7 +14,7 @@ export class ApiService {
   constructor(private http: HttpClient) {  }
   
   initializeData(){
-    this.http.get("https://open.er-api.com/v6/latest/USD").subscribe(
+    this.http.get("https://bdatproject.pythonanywhere.com/getAllExchangeRates").subscribe(
       (data:any) => {
         this.transformData(data);
       }
@@ -40,7 +40,7 @@ export class ApiService {
         "text": "Currency"
       },
       "subtitle": {
-        "text": "Source: https://open.er-api.com/v6/latest/USD"
+        "text": "Source: https://bdatproject.pythonanywhere.com/getAllExchangeRates"
       },
       "xAxis": {
         "categories": categories,
