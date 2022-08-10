@@ -37,10 +37,6 @@ class ExchangeRateRow(db.Model):
     BHD = db.Column(db.Float)
     HKD = db.Column(db.Float)
     JPY = db.Column(db.Float)
-    Highest = db.Column(db.String(5))
-    HighestValue = db.Column(db.Float)
-    Lowest = db.Column(db.String(5))
-    LowestValue = db.Column(db.Float)
 
 @app.route("/initialize", methods=["GET"])
 def initialize():
@@ -126,6 +122,17 @@ def initialize():
 @app.route('/')
 def index():
     return 'Web App with Python Flask!'
+
+@app.route('/getAllExchangesrates')
+def getAllExchangeRates():
+
+    # if request.method == 'GET':
+    #     request_data = request.args.to_dict()
+    # else:
+    #     request_data = request.get_json()
+    
+    dataObj = db.query().order_by(ExchangeRateRow.date.desc()).first()
+    return requests.jsonify(dataObj)
 
 if __name__ == "__main__":
   app.run()
