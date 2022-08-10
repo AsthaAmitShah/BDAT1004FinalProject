@@ -42,6 +42,10 @@ def object_as_dict(obj):
     return {c.key: getattr(obj, c.key)                                                                                                                             
         for c in inspect(obj).mapper.column_attrs}
 
+@app.route('/', methods=['GET'])
+def root():
+    return render_template('index.html') # Return index.html 
+
 @app.route("/initialize", methods=["GET"])
 def initialize():
 
@@ -123,10 +127,6 @@ def initialize():
     
     return "Successfully initialized the databases!"
 
-@app.route('/', methods=['GET'])
-def root():
-    return render_template('index.html') # Return index.html 
-
 @app.route('/getAllExchangeRates')
 def getAllExchangeRates():
 
@@ -155,7 +155,7 @@ def getPastExchangeRates():
         request_data = request.get_json()
 
     startDate = request_data.get("start_date", None)
-    endDate = request_data.get("start_date", None)
+    endDate = request_data.get("end_date", None)
     currency = request_data.get("currency", None)
 
     if startDate == None or endDate == None:
@@ -168,6 +168,39 @@ def getPastExchangeRates():
             dataObj = db.session().query(ExchangeRateRow).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
         else:
             dataObj = db.session().query(ExchangeRateRow).with_entities(currency).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
+    except Exception as e:
+        return f"The code encountered the following error {e}"
+    response = {
+        "base": "USD",
+        "rates": {}
+    }
+    for obj in dataObj:
+        rates = object_as_dict(obj)
+        exchangeRates = {}
+        for cur, value in rates.items():
+            if cur == "date":
+                continue
+            exchangeRates[cur] = value
+
+        response.get("rates")[rates.get("date", "00000000")] = exchangeRates
+
+    return response
+
+
+@app.route('/getCurrencyExchangeRate')
+def getCurrencyExchangeRate():
+    if request.method == 'GET':
+        request_data = request.args.to_dict()
+    else:
+        request_data = request.get_json()
+
+    currency = request_data.get("currency", None)
+
+    if currency == None:
+        return {"Error": "Please provide the currency"}
+
+    try: 
+        dataObj = db.session().query(ExchangeRateRow).with_entities(currency).filter(ExchangeRateRow.date.between(startDateStr, endDateStr)).all()
     except Exception as e:
         return f"The code encountered the following error {e}"
     response = {
