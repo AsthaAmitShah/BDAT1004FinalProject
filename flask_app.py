@@ -178,6 +178,8 @@ def getPastExchangeRates():
         for cur, value in rates.items():
             if cur == "date":
                 continue
+            if currency is None:
+                exchangeRates[cur] = value
             if currency is not None and cur == currency:
                 exchangeRates[cur] = value
 
